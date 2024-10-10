@@ -1,0 +1,35 @@
+# Les Bibliothéque nécessaire pour le programme
+from scapy.all import *
+from collections import Counter
+volume_trafic = Counter()
+# Cette Fonction elle permet de séparer l'addresser Ip du packet
+def compter_paquets(packet):
+    if IP in packet:
+         # Separe l'addresse Ip du packet
+        src_ip = packet[IP].src
+        volume_trafic[src_ip] += 1  # Incrémente le compteur pour cette adresse IP
+# Cette fonction permet de voir toutes les IP qu'il a capturées avec le nombre de paquets envoyés )
+def afficher_toutes_les_ip():
+    for src_ip, count in volume_trafic.items():
+        # Il affiche les IP et le paquet
+        print(f"IP : {src_ip} a envoyé {count} paquets.")
+# Cette fonction elle permet de voir les IP avec des envoie de packet trop elever d'une certainre limite
+def afficher_ip_suspectes(seuil=50):
+    print("\nIP suspectes avec plus de seuil paquets) :")
+     # Cette condition permet de les classer donc si il est au dessus du seuil alors il est suspect
+    for src_ip, count in volume_trafic.items():
+        if count > seuil:
+            print(f"Activité anormale détectée : {src_ip} a envoyé {count} paquets. Potentielle attaque DoS.")
+# Cette Fonction permet de captureer le trafic puis il analyse le résultat
+def detecter_dos(duree_capture=10, seuil=100):
+    print("Début de la capture du trafic...")
+    # Les paquets sont capturés (donc ma WI-FI)
+    sniff(iface='Wi-Fi', prn=compter_paquets, timeout=duree_capture)
+    print("Capture terminée. Analyse des résultats...\n")
+    # Là il affiche toute les IP qu'il a Capturer
+    print("Toutes les IP capturées et leur nombre de paquets :")
+    afficher_toutes_les_ip()
+    # ICI il affcihe les Ip Suspect donc qui ont depasser le seuill de paquet d'une durée limiter (plus 50 paquet en 10 seconde)
+    afficher_ip_suspectes(seuil)
+    print("\nAnalyse terminée.")
+detecter_dos(duree_capture=10, seuil=50)
